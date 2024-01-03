@@ -1,10 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Loader from "@/components/Loader";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 export default function Home() {
   const [task, setTask] = useState("");
   const [taskData, setTaskData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingIndex, setEditingIndex] = useState();
+  const [editText, setEditText] = useState();
+
+  const router = useRouter();
+  const { data: session } = useSession();
 
   const handleChange = (e) => {
     e.preventDefault();
@@ -13,11 +22,11 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("event  ", e.target);
 
     const obj = {
-      created_by: localStorage.getItem("user"),
+      created_by: session?.user?.email,
       task: task,
-      status: "incomplete",
     };
 
     if (task) {
@@ -30,7 +39,7 @@ export default function Home() {
           body: JSON.stringify(obj),
         });
         if (response.ok) {
-          const currentTask = await response.json();
+          // const currentTask = await response.json();
           fetchTasks();
           setTask("");
           // router.push("/");
@@ -42,18 +51,37 @@ export default function Home() {
   };
 
   const fetchTasks = async () => {
-    const data = await fetch("/api/task");
+    setLoading(true);
+    const data = await fetch(`/api/task/${session?.user?.email}`);
     const response = await data.json();
-    setTaskData(response?.data);
+    if (response?.data) {
+      setTaskData(response?.data);
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id) => {
+    const confirmDelte = confirm("Are you sure want to delte the task?");
+    if (confirmDelte) {
+      try {
+        const response = await fetch(`/api/task/${id}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          fetchTasks();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const handleComplete = async (id, e) => {
     try {
       const response = await fetch(`/api/task/${id}`, {
-        method: "DELETE",
+        method: "PATCH",
+        body: JSON.stringify({ isCompleted: e.target.checked }),
       });
-      // const response = await deleteTask.json();
-      console.log("response ", response.ok);
       if (response.ok) {
         fetchTasks();
       }
@@ -62,9 +90,34 @@ export default function Home() {
     }
   };
 
+  const handleUpdate = async (task, id) => {
+    if (editText && editText !== task) {
+      try {
+        const response = await fetch(`/api/task/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ task: editText }),
+        });
+        if (response.ok) {
+          setEditText(null);
+          fetchTasks();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const handleEditChange = (e) => {
+    setEditText(e.target.value);
+  };
+
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (!session) {
+      router.push("/login");
+    } else {
+      fetchTasks();
+    }
+  }, [session, router]);
 
   return (
     <section className="w-full justify-center">
@@ -75,36 +128,81 @@ export default function Home() {
             value={task}
             onChange={handleChange}
             placeholder="Add a new task..."
-            className="w-1/2 p-2 border rounded-l focus:outline-none focus:border-blue-500"
+            className="w-1/2 p-2 border rounded-md shadow-lg focus:outline-none focus:border-[#609EA2]"
           />
           <button
             type="submit"
-            className="bg-blue-500 text-white p-2 ml-2 rounded-md"
+            className="bg-[#609EA2] font-semibold text-[#F0EEED] p-1.5 ml-3 rounded-md"
           >
             Add Task
           </button>
         </div>
       </form>
-
       <div className="m-5">
-        {taskData.length ? (
-          taskData.map((data) => (
+        {taskData.length > 0 ? (
+          taskData.map((data, index) => (
             <div
-              key={data.task}
-              className="w-full m-2 p-3 border-b-2 bg-gray-100 rounded-lg flex justify-between"
+              key={index}
+              className="w-full m-2 p-3 border-b-4 border-x-4 rounded-lg flex justify-between bg-transparent"
             >
-              <p className="font-medium">{data.task}</p>
-              <button
-                onClick={() => handleDelete(data._id)}
-                type="button"
-                className="p-1.5 rounded-md bg-red-500 text-white"
-              >
-                Delete
-              </button>
+              <div className="flex items-center">
+                <input
+                  className="mr-2 w-4 h-4"
+                  type="checkbox"
+                  onChange={(e) => handleComplete(data._id, e)}
+                  checked={data.isCompleted}
+                />
+                <div onDoubleClick={() => setEditingIndex(index)} key={index}>
+                  {editingIndex === index ? (
+                    <input
+                      className="border rounded-md shadow-lg focus:outline-none focus:border-[#609EA2] p-1"
+                      type="text"
+                      onChange={(e) => handleEditChange(e)}
+                      onBlur={() => {
+                        setEditingIndex(null);
+                        handleUpdate(data.task, data._id);
+                      }}
+                      value={editText !== null ? editText : data.task}
+                    />
+                  ) : (
+                    <>
+                      <p
+                        className={
+                          data.isCompleted == true
+                            ? "line-through font-medium"
+                            : "font-medium"
+                        }
+                      >
+                        {data.task}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <img
+                  className="cursor-pointer"
+                  src="/images/trash.png"
+                  width={30}
+                  alt="trash icon"
+                  onClick={() => handleDelete(data._id)}
+                />
+              </div>
             </div>
           ))
         ) : (
-          <p className="text-gray-400">No tasks to show</p>
+          <>
+            {loading ? (
+              <div className="flex justify-center mt-20">
+                <Loader />
+              </div>
+            ) : (
+              <p className="text-gray-400 flex justify-center">
+                No tasks to show
+              </p>
+            )}
+          </>
         )}
       </div>
     </section>

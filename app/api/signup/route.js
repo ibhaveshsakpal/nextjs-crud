@@ -10,13 +10,15 @@ export const POST = async (req, res) => {
     await connectDB();
 
     const existingEmail = await User.findOne({ email: email });
-    // console.log("emaill ", existingEmail?.email === email);
 
     if (existingEmail?.email === email) {
-      return new NextResponse({ message: "Email already exist!" }, { status: 400 });
+      return new NextResponse(
+        { message: "Email already exist!" },
+        { status: 400 }
+      );
     } else {
       const hashedPass = await bcrypt.hash(password, 10);
-``
+      ``;
       const user = await User({
         name: name,
         email: email,
@@ -24,7 +26,10 @@ export const POST = async (req, res) => {
       });
 
       await user.save();
-      return new NextResponse({ message: "Signed up successfully" }, { status: 200 });
+      return new NextResponse(
+        { message: "Signed up successfully" },
+        { status: 200 }
+      );
     }
   } catch (error) {
     return new NextResponse({ message: "Failed to Sign up" }, { status: 500 });

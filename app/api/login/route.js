@@ -21,7 +21,11 @@ export const POST = async (req, res) => {
 
       if (passCheck) {
         return NextResponse.json(
-          { message: "Successfully logged In", email: email },
+          {
+            message: "Successfully logged In",
+            name: existingEmail?.name,
+            email: email,
+          },
           { status: 200 }
         );
       } else {

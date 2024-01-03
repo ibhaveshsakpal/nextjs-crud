@@ -9,9 +9,9 @@ const TaskSchema = new Schema({
     type: String,
     required: [true, "Name is required"],
   },
-  status: {
-    type: String,
-    required: [true, "Status is required"],
+  isCompleted: {
+    type: Boolean,
+    default: false,
   },
 });
 

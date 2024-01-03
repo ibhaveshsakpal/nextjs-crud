@@ -1,13 +1,14 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Router } from "next/router";
 import { useEffect, useState } from "react";
 
 const SignUp = () => {
   const [formData, setformData] = useState({});
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleChange = (e) => {
     setformData((prev) => ({
@@ -16,13 +17,14 @@ const SignUp = () => {
     }));
   };
 
-  //   useEffect(()=>{
-  // console.log("form ", formData);
-  //   },[formData])
+  useEffect(() => {
+    if (session) {
+      router.push("/");
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("form ", formData);
 
     if (formData) {
       try {
@@ -42,6 +44,7 @@ const SignUp = () => {
       }
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-96">
@@ -54,10 +57,11 @@ const SignUp = () => {
             <input
               type="text"
               name="name"
-              className="w-full border-2 focus:outline-none focus:border-blue-500 p-3 rounded"
+              className="w-full border-2 focus:outline-none focus:border-[#C92C6D] p-3 rounded"
               value={formData?.name}
               onChange={handleChange}
               placeholder="Your Name"
+              required
             />
           </div>
           <div className="mb-4">
@@ -67,10 +71,11 @@ const SignUp = () => {
             <input
               type="text"
               name="email"
-              className="w-full border-2 focus:outline-none focus:border-blue-500 p-3 rounded"
+              className="w-full border-2 focus:outline-none focus:border-[#C92C6D] p-3 rounded"
               value={formData?.email}
               onChange={handleChange}
               placeholder="your@example.com"
+              required
             />
           </div>
           <div className="mb-6">
@@ -80,23 +85,28 @@ const SignUp = () => {
             <input
               type="password"
               name="password"
-              className="w-full border-2 focus:outline-none focus:border-blue-500 p-3 rounded"
+              className="w-full border-2 focus:outline-none focus:border-[#C92C6D] p-3 rounded"
               value={formData?.password}
               onChange={handleChange}
               placeholder="Enter your password"
+              required
             />
           </div>
           <button
             type="button"
-            className="bg-blue-500 text-white p-3 rounded w-full hover:bg-blue-600"
-            onClick={handleSubmit}
+            className="bg-[#C92C6D] text-[#F0EEED] p-3 rounded w-full hover:bg-[#f63d8a] font-semibold"
+            onClick={() => handleSubmit}
           >
             Sign Up
           </button>
         </form>
+
         <p className="mt-4 text-center text-gray-600 text-sm">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-500">
+          <Link
+            href="/login"
+            className="text-[#332C39] underline underline-offset-1"
+          >
             Log in
           </Link>
         </p>
