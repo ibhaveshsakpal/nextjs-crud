@@ -9,6 +9,10 @@ const Login = () => {
   const [formData, setformData] = useState({});
   const router = useRouter();
   const { data: session } = useSession();
+  const [formErrors, setFormErrors] = useState({
+    email: "",
+    password: "",
+  });
 
   const handleChange = (e) => {
     setformData((prev) => ({
@@ -17,36 +21,59 @@ const Login = () => {
     }));
   };
 
+  const validate = () => {
+    let valid = true;
+    const errors = {};
+
+    if (
+      !formData.email ||
+      !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)
+    ) {
+      valid = false;
+      errors.email = "Invalid Email";
+    }
+
+    if (!formData.password) {
+      valid = false;
+      errors.password = "Invalid Passoword";
+    }
+
+    setFormErrors(errors);
+    return valid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData) {
-      try {
-        const response = await fetch("/api/login/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-        if (response.ok) {
-          const loggedUser = await response.json();
-          const credentials = {
-            name: loggedUser?.name,
-            email: formData?.email,
-          };
-          signIn("credentials", {
-            ...credentials,
-            redirect: false,
-            callbackUrl: process.env.BASE_URL,
+    if (validate()) {
+      if (formData) {
+        try {
+          const response = await fetch("/api/login/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
           });
-          if (session?.accessToken || session?.user) {
-            localStorage.setItem("accessToken", session?.accessToken);
-            localStorage.setItem("user", session?.user?.name);
+          if (response.ok) {
+            const loggedUser = await response.json();
+            const credentials = {
+              name: loggedUser?.name,
+              email: formData?.email,
+            };
+            signIn("credentials", {
+              ...credentials,
+              redirect: false,
+              callbackUrl: process.env.BASE_URL,
+            });
+            if (session?.accessToken || session?.user) {
+              localStorage.setItem("accessToken", session?.accessToken);
+              localStorage.setItem("user", session?.user?.name);
+            }
           }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
     }
   };
@@ -77,6 +104,11 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="your@example.com"
               />
+              {formErrors.email && (
+                <label className="text-red-500 text-sm">
+                  {formErrors.email}
+                </label>
+              )}
             </div>
             <div className="mb-6">
               <label htmlFor="password" className="block text-gray-600 mb-2">
@@ -90,6 +122,11 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="Enter your password"
               />
+              {formErrors.password && (
+                <label className="text-red-500 text-sm">
+                  {formErrors.password}
+                </label>
+              )}
             </div>
             <button
               type="button"

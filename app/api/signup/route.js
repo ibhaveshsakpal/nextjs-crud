@@ -13,7 +13,7 @@ export const POST = async (req, res) => {
 
     if (existingEmail?.email === email) {
       return new NextResponse(
-        { message: "Email already exist!" },
+        JSON.stringify({ message: "Email already exist!" }),
         { status: 400 }
       );
     } else {

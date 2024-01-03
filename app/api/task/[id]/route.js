@@ -36,7 +36,6 @@ export const PATCH = async (req, { params }) => {
       { new: true }
     );
 
-    console.log("taskStatus ", taskStatus);
     return new NextResponse(
       JSON.stringify({ message: "Task updated successfully", taskStatus }),
       { status: 200 }

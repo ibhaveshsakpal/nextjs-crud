@@ -22,7 +22,6 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("event  ", e.target);
 
     const obj = {
       created_by: session?.user?.email,
@@ -39,10 +38,8 @@ export default function Home() {
           body: JSON.stringify(obj),
         });
         if (response.ok) {
-          // const currentTask = await response.json();
           fetchTasks();
           setTask("");
-          // router.push("/");
         }
       } catch (error) {
         console.log(error);
