@@ -6,14 +6,14 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function Home() {
+  const router = useRouter();
+  const { data: session } = useSession();
+
   const [task, setTask] = useState("");
   const [taskData, setTaskData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingIndex, setEditingIndex] = useState();
   const [editText, setEditText] = useState();
-
-  const router = useRouter();
-  const { data: session } = useSession();
 
   const handleChange = (e) => {
     e.preventDefault();
@@ -159,7 +159,9 @@ export default function Home() {
                         setEditingIndex(null);
                         handleUpdate(data.task, data._id);
                       }}
-                      value={editText !== null ? editText : data.task}
+                      value={
+                        editText && editText !== null ? editText : data.task
+                      }
                     />
                   ) : (
                     <>

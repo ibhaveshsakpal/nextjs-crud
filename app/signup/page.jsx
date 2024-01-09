@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const SignUp = () => {
-  const [formData, setformData] = useState({});
+  const [formData, setformData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const router = useRouter();
   const { data: session } = useSession();
   const [formErrors, setFormErrors] = useState({

@@ -6,7 +6,10 @@ import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 
 const Login = () => {
-  const [formData, setformData] = useState({});
+  const [formData, setformData] = useState({
+    email: "",
+    password: "",
+  });
   const router = useRouter();
   const { data: session } = useSession();
   const [formErrors, setFormErrors] = useState({
@@ -66,10 +69,6 @@ const Login = () => {
               redirect: false,
               callbackUrl: process.env.BASE_URL,
             });
-            if (session?.accessToken || session?.user) {
-              localStorage.setItem("accessToken", session?.accessToken);
-              localStorage.setItem("user", session?.user?.name);
-            }
           }
         } catch (error) {
           console.log(error);
