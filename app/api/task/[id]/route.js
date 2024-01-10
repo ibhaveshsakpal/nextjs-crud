@@ -46,14 +46,21 @@ export const PATCH = async (req, { params }) => {
 };
 
 export const GET = async (req, { params }) => {
-  const email = params?.id;
+  // const email = params?.id;
+  const taskId = params?.id;
 
   try {
     await connectDB();
-    const tasks = await Task.find({ created_by: email });
+
+    let task = "";
+    if(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(taskId)){
+      task = await Task.find({ created_by: taskId });
+    }else{
+      task = await Task.findOne({ _id: taskId });
+    }
 
     return new NextResponse(
-      JSON.stringify({ message: "Tasks fetched Successfully", data: tasks }),
+      JSON.stringify({ message: "Tasks fetched Successfully", data: task }),
       { status: 200 }
     );
   } catch (error) {
