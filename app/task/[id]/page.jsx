@@ -2,17 +2,18 @@
 
 import Loader from "@/components/Loader";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const Task = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathName = usePathname();
   const [taskData, setTaskData] = useState({});
   const [loading, setLoading] = useState(true);
 
   const fetchTaskDetails = async () => {
-    const queryParams = window.location.href.split("/");
+    const queryParams = pathName.split("/");
     const taskId = queryParams[queryParams?.length - 1];
 
     try {
