@@ -1,5 +1,5 @@
 import Loader from "@/components/Loader";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -206,7 +206,9 @@ const Home = (props) => {
   );
 };
 
-// export const getServerSideProps = async () => {
+export const getServerSideProps = async(context) => {
+  const session = await getSession({ req: context.req });
+  console.log("============= session ", session);
 //   setLoading(true);
 //   const data = await fetch(`/api/task/${session?.user?.email}`);
 //   const response = await data.json();
@@ -215,7 +217,7 @@ const Home = (props) => {
 //     setLoading(false);
 //   }
 
-//   return { props: { data: response.data } };
-// };
+  return { props: { data: session } };
+};
 
 export default Home;
